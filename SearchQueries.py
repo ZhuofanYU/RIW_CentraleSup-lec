@@ -9,16 +9,16 @@ from tqdm import tqdm
 #                                                             #
 #           Thank you for using our search engine             #
 # Please replace the text of the following variable 'query'   #
-#                                                             #
+#                           ^-^                               #
 ###############################################################
-query = "stanford students"             # <---------------LOOK AT HERE! ^-^
+
+query = "stanev_page_30 gif previous index image 30 of 36 next"
 
 Vocabulary = pkl.load(open("Vocabulary.pkl", "rb"))
 Freq_Vocabulary = pkl.load(open("Freq_Vocabulary.pkl", "rb"))
 Collection = pkl.load(open("Collection.pkl", "rb"))
 Absolute_Values = pkl.load(open("Absolute_Values.pkl", "rb"))
 TF_IDF = pkl.load(open("TF_IDF.pkl", "rb"))
-
 
 
 def preprocess_query(query):
@@ -81,3 +81,5 @@ for results in Query_Results:
     if results[1] <= 1.34:
         print(results[0], results[1])
         i = i + 1
+        if i >= 20:
+            break
