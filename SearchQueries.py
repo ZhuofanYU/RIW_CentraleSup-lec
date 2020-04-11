@@ -5,13 +5,20 @@ import math
 import pickle as pkl
 from tqdm import tqdm
 
+###############################################################
+#                                                             #
+#           Thank you for using our search engine             #
+# Please replace the text of the following variable 'query'   #
+#                                                             #
+###############################################################
+query = "stanford students"             # <---------------LOOK AT HERE! ^-^
+
 Vocabulary = pkl.load(open("Vocabulary.pkl", "rb"))
 Freq_Vocabulary = pkl.load(open("Freq_Vocabulary.pkl", "rb"))
 Collection = pkl.load(open("Collection.pkl", "rb"))
 Absolute_Values = pkl.load(open("Absolute_Values.pkl", "rb"))
-TF_IDF = pkl.load(open("TF_IDF.pkl","rb"))
+TF_IDF = pkl.load(open("TF_IDF.pkl", "rb"))
 
-query = "stanford students"
 
 
 def preprocess_query(query):
@@ -71,13 +78,6 @@ Query_Results = sorted(Score, key=lambda x: x[1])
 i = 0
 for results in Query_Results:
 
-    if i == 10:
-        break
-    i = i + 1
-
-    print(results[0], results[1])
-
-
-
-
-
+    if results[1] <= 1.34:
+        print(results[0], results[1])
+        i = i + 1
