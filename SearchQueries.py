@@ -14,6 +14,11 @@ from tqdm import tqdm
 
 query = "stanev_page_30 gif previous index image 30 of 36 next"
 output_number_max = 20
+threshold = 1.344
+
+
+
+############# DO NOT CHANGE THE FOLLOWING CODE  ##################
 
 Vocabulary = pkl.load(open("Vocabulary.pkl", "rb"))
 Freq_Vocabulary = pkl.load(open("Freq_Vocabulary.pkl", "rb"))
@@ -79,7 +84,7 @@ Query_Results = sorted(Score, key=lambda x: x[1])
 i = 0
 for results in Query_Results:
 
-    if results[1] <= 1.34:
+    if results[1] <= threshold:
         print(results[0], results[1])
         i = i + 1
         if i >= output_number_max:
