@@ -51,7 +51,7 @@ def evaluate(nb=100, id=0, threshold=0):
     nb_total_rappel = 0
     nb_correct = 0
     correct = []
-    for query_id in collection_queries.keys():
+    for query_id in tqdm(collection_queries.keys()):
         if id == 0:
             answers = search(
                 collection_queries[query_id], nb, threshold=threshold)
@@ -59,7 +59,7 @@ def evaluate(nb=100, id=0, threshold=0):
             nb_total_rappel += len(collection_output[query_id])
             for answer in answers.keys():
                 if answer in collection_output[query_id]:
-                    #print('correct: {}'.format(answers[answer]))
+                    # print('correct: {}'.format(answers[answer]))
                     nb_correct += 1
 
         elif query_id == str(id):
@@ -69,7 +69,7 @@ def evaluate(nb=100, id=0, threshold=0):
             nb_total_rappel += len(collection_output[query_id])
             for answer in answers.keys():
                 if answer in collection_output[query_id]:
-                    #print('correct: {}'.format(answers[answer]))
+                    # print('correct: {}'.format(answers[answer]))
                     nb_correct += 1
     if nb_total == 0:
         nb_total = 1
@@ -82,36 +82,66 @@ def evaluate(nb=100, id=0, threshold=0):
     return [precision, rappel]
 
 
-def evaluate_threshold(nb=100000, threshold=0):
+def evaluate_threshold(id=0, nb=100000, threshold=0):
     threshold_correct = []
     threshold_wrong = []
     nb_correct = []
     nb_wrong = []
     cnt_correct = 0
     cnt_wrong = 0
-    for query_id in collection_queries.keys():
+    if id == 0:
+        for query_id in tqdm(collection_queries.keys()):
+            answers = search(
+                collection_queries[query_id], nb=nb, threshold=threshold)
+            for answer in answers.keys():
+                if answer in collection_output[query_id]:
+                    # print('correct: {}'.format(answers[answer]))
+                    cnt_correct += 1
+                    nb_correct.append(cnt_correct)
+                    threshold_correct.append(answers[answer])
+                else:
+                    # print('wrong: {}'.format(answers[answer]))
+                    cnt_wrong += 1
+                    nb_wrong.append(cnt_wrong)
+                    threshold_wrong.append(answers[answer])
+    else:
+        query_id = str(id)
         answers = search(
             collection_queries[query_id], nb=nb, threshold=threshold)
         for answer in answers.keys():
             if answer in collection_output[query_id]:
-                #print('correct: {}'.format(answers[answer]))
+                # print('correct: {}'.format(answers[answer]))
                 cnt_correct += 1
                 nb_correct.append(cnt_correct)
                 threshold_correct.append(answers[answer])
             else:
-                #print('wrong: {}'.format(answers[answer]))
+                # print('wrong: {}'.format(answers[answer]))
                 cnt_wrong += 1
                 nb_wrong.append(cnt_wrong)
                 threshold_wrong.append(answers[answer])
+
+    max_x = 1.55
     fig, ax = plt.subplots(figsize=(8, 4))
-    ax.hist(threshold_correct, label='pertinent', bins=1000, cumulative=True)
-    ax.hist(threshold_wrong, label='non-pertinent', bins=1000, cumulative=True)
+    n_correct, bins_correct, patches_correct = ax.hist(
+        threshold_correct, label='pertinent', bins=1000, cumulative=True)
+    n_wrong, bins_wrong, patches_wrong = ax.hist(
+        threshold_wrong, label='non-pertinent', bins=1000, cumulative=True)
+    # print(n_correct)
     ax.grid(True)
     ax.legend(loc='center left')
     ax.set_ylabel('Cumulate number')
 
+    index = 0
+    for i in range(len(bins_wrong)):
+        if bins_wrong[i] >= 1.55 and bins_correct[i] >= 1.55:
+            index = i
+            break
+    if index != 0:
+        ax.set_ylim(0, int(1.7*max(n_correct[index], n_wrong[index])))
+    #print(max(n_correct[index], n_wrong[index]))
+    #ax.set_ylim(0, 1.7*max(n_correct[index], n_wrong[index]))
+
     x = []
-    max_x = 1.55
     precision = []
     rappel = []
     i = 1.2
@@ -129,16 +159,15 @@ def evaluate_threshold(nb=100000, threshold=0):
     # ax2.set_ylabel('Percentage(%)')
     ax2.legend()
 
-    ax.set_ylim(0, 20000)
-    plt.xlabel('angle(rad)')
+    plt.xlabel('score')
     plt.xlim(1.2, max_x)
     plt.show()
     """plt.plot(threshold_correct, y, alpha=0.6)
     plt.ylabel("cnt")
     plt.xlabel("threshold")
     plt.title("Thredshold-cnt")
-    #plt.ylim(0, 1)
-    #plt.xlim(0, 1)
+    # plt.ylim(0, 1)
+    # plt.xlim(0, 1)
     plt.show()"""
 
 
@@ -218,9 +247,8 @@ def search(query, nb=10, threshold=0):
 
 
 # evaluate(id=8)
-evaluate_threshold(threshold=0)
 # evaluate(threshold=0.5)
-#query = search("stanford students")
+# query = search("stanford students")
 # print(query)
 """
 cnt = 10
@@ -244,21 +272,42 @@ print("cnt = {}".format(cnt))
 evaluate(cnt)
 """
 
-"""
-x = []
-y = []
-#plt.figure(figsize=(8, 4))
-cnt = 10
-while cnt < 100000:
-    result = evaluate(cnt, id=8)
-    cnt = int(cnt * 1.1)
-    x.append(result[1])
-    y.append(result[0])
-plt.scatter(x, y, alpha=0.6)
-plt.ylabel("precision")
-plt.xlabel("Rappel")
-plt.title("Query 8")
-plt.ylim(0, 1)
-plt.xlim(0, 1)
-plt.show()
-"""
+
+def plotPrecisionRappel(id):
+    data = []
+    data_inter = []
+    # plt.figure(figsize=(8, 4))
+    cnt = 10
+    while cnt < 100000:
+        result = evaluate(cnt, id=str(id))
+        cnt = int(cnt * 1.1)
+        data.append([result[1], result[0]])
+    data = sorted(data, key=(lambda x: x[0]))
+    precision = []
+    precision_inter = []
+    rappel = []
+    for i in range(len(data)):
+        rappel.append(data[i][0])
+        precision.append(data[i][1])
+    for i in range(len(data)):
+        precision_inter.append(max(precision[i:]))
+    plt.scatter(rappel, precision, alpha=0.6, label='rappel-précision')
+    plt.plot(rappel, precision_inter, alpha=0.8, color='r',
+             label='rappel-précision interpolée')
+    plt.ylabel("precision")
+    plt.xlabel("Rappel")
+    plt.title("Query " + str(id))
+    plt.ylim(0, 1)
+    plt.xlim(0, 1)
+    plt.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    # plotPrecisionRappel(8)
+    # evaluate_threshold()
+    # evaluate_threshold(threshold=1.344)
+    # evaluate_threshold(nb=1000)
+    # evaluate(id=3, nb=500)
+    # evaluate(id=4, threshold=1.34)
+    evaluate_threshold(id=2)

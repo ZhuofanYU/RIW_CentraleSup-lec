@@ -13,6 +13,7 @@ from tqdm import tqdm
 ###############################################################
 
 query = "stanev_page_30 gif previous index image 30 of 36 next"
+output_number_max = 20
 
 Vocabulary = pkl.load(open("Vocabulary.pkl", "rb"))
 Freq_Vocabulary = pkl.load(open("Freq_Vocabulary.pkl", "rb"))
@@ -81,5 +82,5 @@ for results in Query_Results:
     if results[1] <= 1.34:
         print(results[0], results[1])
         i = i + 1
-        if i >= 20:
+        if i >= output_number_max:
             break
