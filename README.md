@@ -12,7 +12,7 @@ projet du cours RIW. Projet RIW. OSY, CentraleSupélec
 Please use the functions in "Evaluation.py" file to reconstruct our figures in the documentation or to explore more!
 Uncomment the function and wait for the output.
 ### Documentation of the evaluation functions
-***evaluate(nb,id,thredhold)***
+***evaluate(nb,id,thredhold)***  
 **Description**:
 
 ## small documentation
