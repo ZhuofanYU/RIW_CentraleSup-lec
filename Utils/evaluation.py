@@ -46,7 +46,7 @@ def precision_interpolate(precision: list):
     return result
 
 
-def evaluate(id=0, nb=100, threshold=0):
+def evaluate(id=0, nb=100000, threshold=0):
     nb_total = 0
     nb_total_rappel = 0
     nb_correct = 0
@@ -89,6 +89,7 @@ def evaluate_threshold(id=0, nb=100000, threshold=0):
     nb_wrong = []
     cnt_correct = 0
     cnt_wrong = 0
+    print("id={}".format(id))
     if id == 0:
         for query_id in tqdm(collection_queries.keys()):
             answers = search(
@@ -108,6 +109,7 @@ def evaluate_threshold(id=0, nb=100000, threshold=0):
         query_id = str(id)
         answers = search(
             collection_queries[query_id], nb=nb, threshold=threshold)
+        # print(answers)
         for answer in answers.keys():
             if answer in collection_output[query_id]:
                 # print('correct: {}'.format(answers[answer]))
@@ -120,47 +122,60 @@ def evaluate_threshold(id=0, nb=100000, threshold=0):
                 nb_wrong.append(cnt_wrong)
                 threshold_wrong.append(answers[answer])
 
-    max_x = 1.55
+    if id == 0:
+        max_x = 1.55
+    else:
+        max_x = 1.59
     fig, ax = plt.subplots(figsize=(8, 4))
     n_correct, bins_correct, patches_correct = ax.hist(
         threshold_correct, label='pertinent', bins=1000, cumulative=True)
     n_wrong, bins_wrong, patches_wrong = ax.hist(
         threshold_wrong, label='non-pertinent', bins=1000, cumulative=True)
-    # print(n_correct)
     ax.grid(True)
     ax.legend(loc='center left')
     ax.set_ylabel('Cumulate number')
 
-    index = 0
     for i in range(len(bins_wrong)):
-        if bins_wrong[i] >= 1.55 and bins_correct[i] >= 1.55:
-            index = i
+        if bins_wrong[i] >= 1.55 and bins_correct[i] >= 1.55:  # 1.55
+            ax.set_ylim(0, int(1.7*max(n_correct[i], n_wrong[i])))
             break
-    if index != 0:
-        ax.set_ylim(0, int(1.7*max(n_correct[index], n_wrong[index])))
-    #print(max(n_correct[index], n_wrong[index]))
-    #ax.set_ylim(0, 1.7*max(n_correct[index], n_wrong[index]))
+
+    # print(max(n_correct[index], n_wrong[index]))
+    # ax.set_ylim(0, 1.7*max(n_correct[index], n_wrong[index]))
 
     x = []
     precision = []
     rappel = []
-    i = 1.2
-    while i <= max_x:
-        result = evaluate(id=0, threshold=i)
-        x.append(i)
-        precision.append(result[0])
-        rappel.append(result[1])
-        i += 0.01
+
+    if id != 1:
+        i = 1.2
+        while i <= max_x:
+            print("Threshold:{}".format(i))
+            result = evaluate(id=id, threshold=i, nb=nb)
+            x.append(i)
+            precision.append(result[0])
+            rappel.append(result[1])
+            i += 0.01
+    else:
+        i = 1.5
+        while i < 1.5708:
+            print("Threshold:{}".format(i))
+            result = evaluate(id=id, threshold=i, nb=nb)
+            x.append(i)
+            precision.append(result[0])
+            rappel.append(result[1])
+            i += 0.005
     ax2 = ax.twinx()
     ax2.plot(x, precision, color='r', label='précision')
     precision_inter = precision_interpolate(precision)
     ax2.plot(x, precision_inter, color='b', label='précision interpolée')
     ax2.plot(x, rappel, color='g', label='rappel')
     # ax2.set_ylabel('Percentage(%)')
-    ax2.legend()
+    ax2.legend(loc='center right')
 
     plt.xlabel('score')
-    plt.xlim(1.2, max_x)
+    plt.xlim(1.2, 1.55)
+
     plt.show()
     """plt.plot(threshold_correct, y, alpha=0.6)
     plt.ylabel("cnt")
@@ -168,7 +183,87 @@ def evaluate_threshold(id=0, nb=100000, threshold=0):
     plt.title("Thredshold-cnt")
     # plt.ylim(0, 1)
     # plt.xlim(0, 1)
-    plt.show()"""
+    plt.show() """
+
+
+def eighttoone(oldlist: list):
+    new_len = int((len(oldlist) - 1) / 8)
+    newlist = [0.0, ]
+    for i in range(new_len):
+        tmp = 0
+        for j in range(8):
+            tmp += oldlist[i+j*new_len+1]
+        newlist.append(tmp)
+    return newlist
+
+
+def evaluate_num(id=0, nb=100):
+    nb_correct = [0, ]
+    nb_wrong = [0, ]
+    cnt_correct = 0
+    cnt_wrong = 0
+    print("id={}".format(id))
+    if id == 0:
+        for query_id in tqdm(collection_queries.keys()):
+            cnt_correct = 0
+            cnt_wrong = 0
+            answers = search(
+                collection_queries[query_id], nb=nb)
+            for answer in answers.keys():
+                if answer in collection_output[query_id]:
+                    cnt_correct += 1
+                else:
+                    cnt_wrong += 1
+                nb_correct.append(cnt_correct)
+                nb_wrong.append(cnt_wrong)
+        nb_correct = eighttoone(nb_correct)
+        nb_wrong = eighttoone(nb_wrong)
+    else:
+        query_id = str(id)
+        answers = search(
+            collection_queries[query_id], nb=nb)
+        for answer in tqdm(answers.keys()):
+            if answer in collection_output[query_id]:
+                cnt_correct += 1
+            else:
+                cnt_wrong += 1
+            nb_correct.append(cnt_correct)
+            nb_wrong.append(cnt_wrong)
+    precision = []
+    rappel = []
+    nb_total_rappel = 0
+    for query_id in tqdm(collection_queries.keys()):
+        if id == 0:
+            nb_total_rappel += len(collection_output[query_id])
+        elif query_id == str(id):
+            nb_total_rappel += len(collection_output[query_id])
+    for i in tqdm(range(nb)):
+        if id != 0:
+            precision.append(nb_correct[i+1] / (i + 1))
+        else:
+            precision.append(nb_correct[i+1] / (8*(i + 1)))
+        rappel.append(nb_correct[i + 1] / nb_total_rappel)
+    print("Generating Graph...")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    x = np.arange(1, nb+1, 1)
+    ax.bar(x, nb_correct[1:],
+           color='royalblue', label="pertinent", alpha=0.8)
+    ax.bar(x, nb_wrong[1:], bottom=nb_correct[1:], color='coral',
+           label="non-pertinent", alpha=0.8)
+
+    ax2 = ax.twinx()
+    ax2.plot(x, precision, label="precision")
+    ax2.plot(x, rappel, label="rappel")
+    ax.set_ylabel("cumulative number")
+    ax2.set_ylabel("ratio")
+    ax.legend(loc='upper right')
+    ax2.legend(loc='center left')
+    ax.set_xlabel("count")
+    if id != 0:
+        plt.title("Query {}".format(str(id)))
+    else:
+        plt.title("8 Queries")
+    plt.show()
 
 
 collection_queries = load_queries()
@@ -207,7 +302,7 @@ def preprocess_query(query):
     return processed_query
 
 
-def search(query, nb=10, threshold=0):
+def search(query, nb=100, threshold=0):
 
     query = preprocess_query(query)
 
@@ -238,11 +333,12 @@ def search(query, nb=10, threshold=0):
         if threshold != 0:
             if result[1] <= threshold:
                 results[result[0]] = result[1]
+                i = i + 1
         else:
-            if i == nb:
-                break
             results[result[0]] = result[1]
             i = i + 1
+        if i == nb:
+            break
     return results
 
 
