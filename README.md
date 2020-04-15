@@ -5,7 +5,7 @@ projet du cours RIW. Projet RIW. OSY, CentraleSupélec
 1. Clone this projet to your computer
 2. Open the root folder of this project
 3. Open the file SearchQueries.py
-4. replace the "query" variable (line 15) by your own text. You could also modify the value of "output_number_max" and "threshold" to change the number of output files
+4. replace the "query" variable (line 15) by your own query. You could also modify the value of "output_number_max" and "threshold" to change the number of output files
 5. Run and you will see the list of recommended documents in the console
 
 ## How to reconstruct the evaluation?
