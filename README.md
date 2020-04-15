@@ -28,6 +28,13 @@ Similar to evaluate but plotting the cumulative curves of pertinent and non-pert
   nb: number of output files of a query, by default 100000.
   threshold: threshold of the score. Only files with scores below the threshold will be output. threshold=0 is a particular case which we define it as no threshold. by default threshold=0
   
+***evaluate_num(id,nb)***
+**Description**:  
+evaluate the precision and rappel with respect to a given develop query.
+**Parameters**:  
+  id: id number of the develop query. Integer number among 0 - 8 where id=0 means evaluating all 8 develop queries. By default 0
+  nb: number of maximal output files of a query, by default 100.
+  
  ***plotPrecisionRappel(id)***    
 **Description**:  
 plot the precision-rappel curve of a given develop query.  
@@ -35,6 +42,6 @@ plot the precision-rappel curve of a given develop query.
   id: develop query id number. Integer number among 0 - 8 where id=0 means evaluating all 8 develop queries.
 
 ## small documentation
-Please check file 'report.docx'
+Please check file 'PetitDocument.pdf'
 
 
