@@ -41,7 +41,7 @@ plot the precision-rappel curve of a given develop query.
 **Parameters**:  
   id: develop query id number. Integer number among 0 - 8 where id=0 means evaluating all 8 develop queries.
 
-## small documentation
+## small document
 Please check file 'PetitDocument.pdf'
 
 
